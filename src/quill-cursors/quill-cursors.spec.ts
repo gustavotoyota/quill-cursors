@@ -550,6 +550,45 @@ describe('QuillCursors', () => {
       const cursors = new QuillCursors(quill);
       expect(() => cursors.toggleFlag('abc')).not.toThrow();
     });
+
+    it('toggle near cursor', () => {
+      const cursors = new QuillCursors(quill);
+      cursors.createCursor('abc', 'Joe Bloggs', 'red');
+      const cursor = cursors.cursors()[0];
+      jest.spyOn(cursor, 'toggleFlag');
+      (cursors as any)._cursorsCoordinates['abc'] = {
+        x: 0,
+        y: 0,
+        height: 1,
+      };
+      const event = new MouseEvent('mousemove');
+      (event as any).pageX = 0;
+      (event as any).pageY = 0;
+      const editor = quill.container.getElementsByClassName('ql-editor')[0];
+      editor.dispatchEvent(event);
+      expect(cursor.toggleFlag).toBeCalledWith(true);
+    });
+
+    it('close flag after delay on mobiles', () => {
+      jest.useFakeTimers();
+      const cursors = new QuillCursors(quill);
+      cursors.createCursor('abc', 'Joe Bloggs', 'red');
+      const cursor = cursors.cursors()[0];
+      jest.spyOn(cursor, 'toggleFlag');
+      (cursors as any)._cursorsCoordinates['abc'] = {
+        x: 0,
+        y: 0,
+        height: 1,
+      };
+      const event = new MouseEvent('touchstart');
+      (event as any).pageX = 0;
+      (event as any).pageY = 0;
+      const editor = quill.container.getElementsByClassName('ql-editor')[0];
+      editor.dispatchEvent(event);
+      expect(cursor.toggleFlag).toBeCalledWith(true);
+      jest.runAllTimers();
+      expect(cursor.toggleFlag).toHaveBeenLastCalledWith(false);
+    });
   });
 
   function createLeaf(tag?: string): any[] {

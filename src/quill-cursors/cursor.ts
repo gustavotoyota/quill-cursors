@@ -1,6 +1,7 @@
 import IQuillCursorsOptions from './i-quill-cursors-options';
 import IQuillRange from './i-range';
 import tinycolor = require('tinycolor2');
+import {IUpdateCoordinates} from './i-update-coordinates';
 
 export default class Cursor {
   public static readonly CONTAINER_ELEMENT_TAG = 'SPAN';
@@ -10,6 +11,7 @@ export default class Cursor {
   public static readonly SELECTION_BLOCK_CLASS = 'ql-cursor-selection-block';
   public static readonly CARET_CLASS = 'ql-cursor-caret';
   public static readonly CARET_CONTAINER_CLASS = 'ql-cursor-caret-container';
+  public static readonly CONTAINER_HOVER_CLASS = 'hover';
   public static readonly FLAG_CLASS = 'ql-cursor-flag';
   public static readonly SHOW_FLAG_CLASS = 'show-flag';
   public static readonly FLAG_FLIPPED_CLASS = 'flag-flipped';
@@ -29,11 +31,13 @@ export default class Cursor {
   private _hideDelay: string;
   private _hideSpeedMs: number;
   private _positionFlag: (flag: HTMLElement, caretRectangle: ClientRect, container: ClientRect) => void;
+  private _updateCoordinates: IUpdateCoordinates;
 
-  public constructor(id: string, name: string, color: string) {
+  public constructor(id: string, name: string, color: string, updateCoordinates: IUpdateCoordinates) {
     this.id = id;
     this.name = name;
     this.color = color;
+    this._updateCoordinates = updateCoordinates;
   }
 
   public build(options: IQuillCursorsOptions): HTMLElement {
@@ -78,6 +82,7 @@ export default class Cursor {
   }
 
   public toggleFlag(shouldShow?: boolean): void {
+    this._caretEl.classList.toggle(Cursor.CONTAINER_HOVER_CLASS, shouldShow);
     const isShown = this._flagEl.classList.toggle(Cursor.SHOW_FLAG_CLASS, shouldShow);
     if (isShown) return;
     this._flagEl.classList.add(Cursor.NO_DELAY_CLASS);
@@ -95,6 +100,9 @@ export default class Cursor {
     } else {
       this._updateCaretFlag(rectangle, container);
     }
+
+    const {x, y, height} = this._caretEl.getBoundingClientRect();
+    this._updateCoordinates(this.id, x, y, height);
   }
 
   public updateSelection(selections: ClientRect[], container: ClientRect): void {

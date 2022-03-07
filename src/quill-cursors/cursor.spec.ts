@@ -2,6 +2,8 @@ import Cursor from './cursor';
 import IQuillCursorsOptions from './i-quill-cursors-options';
 import '@testing-library/jest-dom/extend-expect';
 
+const updateCursorCoordinates = jest.fn();
+
 describe('Cursor', () => {
   let template: string;
   let options: IQuillCursorsOptions;
@@ -29,7 +31,7 @@ describe('Cursor', () => {
   });
 
   it('stores constructor parameters', () => {
-    const cursor = new Cursor('abc', 'Joe Bloggs', 'red');
+    const cursor = new Cursor('abc', 'Joe Bloggs', 'red', updateCursorCoordinates);
 
     expect(cursor.id).toBe('abc');
     expect(cursor.name).toBe('Joe Bloggs');
@@ -37,7 +39,7 @@ describe('Cursor', () => {
   });
 
   it('builds the cursor element', () => {
-    const element = new Cursor('abc', 'Jane Bloggs', 'red').build(options);
+    const element = new Cursor('abc', 'Jane Bloggs', 'red', updateCursorCoordinates).build(options);
 
     expect(element).toContainHTML(`
       <span class="ql-cursor-selections"></span>
@@ -52,12 +54,12 @@ describe('Cursor', () => {
   });
 
   it('adds the ID to the element', () => {
-    const element = new Cursor('abc', 'Jane Bloggs', 'red').build(options);
+    const element = new Cursor('abc', 'Jane Bloggs', 'red', updateCursorCoordinates).build(options);
     expect(element.id).toBe('ql-cursor-abc');
   });
 
   it('toggles element visibility', () => {
-    const cursor = new Cursor('abc', 'Jane Bloggs', 'red');
+    const cursor = new Cursor('abc', 'Jane Bloggs', 'red', updateCursorCoordinates);
     const element = cursor.build(options);
     expect(element.classList.contains('hidden')).toBe(false);
 
@@ -69,7 +71,7 @@ describe('Cursor', () => {
   });
 
   it('removes the element from the DOM', () => {
-    const cursor = new Cursor('abc', 'Jane Bloggs', 'red');
+    const cursor = new Cursor('abc', 'Jane Bloggs', 'red', updateCursorCoordinates);
     const element = cursor.build(options);
     const parent = document.createElement('DIV');
     document.body.appendChild(parent);
@@ -83,7 +85,7 @@ describe('Cursor', () => {
   });
 
   it('updates the caret position', () => {
-    const cursor = new Cursor('abc', 'Jane Bloggs', 'red');
+    const cursor = new Cursor('abc', 'Jane Bloggs', 'red', updateCursorCoordinates);
     const element = cursor.build(options);
 
     const rectangle: any = {
@@ -112,7 +114,7 @@ describe('Cursor', () => {
   });
 
   it('updates the caret position flipping flag', () => {
-    const cursor = new Cursor('abc', 'Jane Bloggs', 'red');
+    const cursor = new Cursor('abc', 'Jane Bloggs', 'red', updateCursorCoordinates);
     const element = cursor.build(options);
 
     const rectangle: any = {
@@ -142,7 +144,7 @@ describe('Cursor', () => {
   });
 
   it('updates flag with custom position method', () => {
-    const cursor = new Cursor('abc', 'Jane Bloggs', 'red');
+    const cursor = new Cursor('abc', 'Jane Bloggs', 'red', updateCursorCoordinates);
     options.positionFlag = jest.fn();
     cursor.build(options);
 
@@ -165,7 +167,7 @@ describe('Cursor', () => {
   });
 
   it('toggles the flag display', () => {
-    const cursor = new Cursor('abc', 'Jane Bloggs', 'red');
+    const cursor = new Cursor('abc', 'Jane Bloggs', 'red', updateCursorCoordinates);
     const element = cursor.build(options);
     const flag = element.getElementsByClassName(Cursor.FLAG_CLASS)[0];
 
@@ -179,7 +181,7 @@ describe('Cursor', () => {
   });
 
   it('removes the delay when actively hiding the flag', () => {
-    const cursor = new Cursor('abc', 'Jane Bloggs', 'red');
+    const cursor = new Cursor('abc', 'Jane Bloggs', 'red', updateCursorCoordinates);
     const element = cursor.build(options);
     const flag = element.getElementsByClassName(Cursor.FLAG_CLASS)[0];
 
@@ -198,7 +200,7 @@ describe('Cursor', () => {
     let selection2: any;
 
     beforeEach(() => {
-      cursor = new Cursor('abc', 'Jane Bloggs', 'red');
+      cursor = new Cursor('abc', 'Jane Bloggs', 'red', updateCursorCoordinates);
       element = cursor.build(options);
 
       selection1 = {

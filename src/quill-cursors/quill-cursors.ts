@@ -5,6 +5,7 @@ import * as RangeFix from 'rangefix';
 import template from './template';
 import ResizeObserver from 'resize-observer-polyfill';
 import Delta = require('quill-delta');
+import {throttle} from './throttle';
 
 export default class QuillCursors {
   public static DEFAULTS: IQuillCursorsOptions = {
@@ -19,6 +20,7 @@ export default class QuillCursors {
   public readonly options: IQuillCursorsOptions;
 
   private readonly _cursors: { [id: string]: Cursor } = {};
+  private readonly _cursorsCoordinates: { [id: string]: {x: number, y: number, height: number} } = {};
   private readonly _container: HTMLElement;
   private readonly _boundsContainer: HTMLElement;
   private _currentSelection: IQuillRange;
@@ -40,7 +42,7 @@ export default class QuillCursors {
     let cursor = this._cursors[id];
 
     if (!cursor) {
-      cursor = new Cursor(id, name, color);
+      cursor = new Cursor(id, name, color, this.updateCursorCoordinates.bind(this));
       this._cursors[id] = cursor;
       const element = cursor.build(this.options);
       this._container.appendChild(element);
@@ -91,6 +93,10 @@ export default class QuillCursors {
       .map((key) => this._cursors[key]);
   }
 
+  public updateCursorCoordinates(id: string, x: number, y: number, height: number): void {
+    this._cursorsCoordinates[id] = {x, y, height};
+  }
+
   private _registerSelectionChangeListeners(): void {
     this.quill.on(
       this.quill.constructor.events.SELECTION_CHANGE,
@@ -110,6 +116,26 @@ export default class QuillCursors {
   private _registerDomListeners(): void {
     const editor = this.quill.container.getElementsByClassName('ql-editor')[0];
     editor.addEventListener('scroll', () => this.update());
+
+    editor.addEventListener('mousemove', throttle(this._toggleNearCursors.bind(this), 100));
+    editor.addEventListener('touchstart', this._toggleNearCursors.bind(this));
+  }
+
+  private _toggleNearCursors(e: MouseEvent): void {
+    const pointX = e.pageX;
+    const pointY = e.pageY;
+
+    Object.keys(this._cursorsCoordinates).forEach((id) => {
+      const rem = 8;
+      const {x, y, height} = this._cursorsCoordinates[id];
+      const isXNear = pointX - x < rem && pointX - x > -rem;
+      const isYNear = pointY - y - height < (rem / 2) && pointY - y > -(rem / 2);
+      const shouldShow = isXNear && isYNear;
+      this._cursors[id].toggleFlag(shouldShow);
+      if (shouldShow && e.type === 'touchstart') {
+        setTimeout(() => this._cursors[id].toggleFlag(false), this.options.hideDelayMs);
+      }
+    });
   }
 
   private _registerResizeObserver(): void {
