@@ -58,13 +58,21 @@ $transition-func: cubic-bezier(0.250, 0.460, 0.450, 0.940);
     display: none;
   }
 
+  .ql-cursor-selection-container {
+    overflow: hidden;
+    position: absolute;
+    left: 0; right: 0;
+    top: 0; bottom: 0;
+    pointer-events: none;
+  }
+
   .ql-cursor-caret-container,
   .ql-cursor-flag {
     position: absolute;
   }
 
   .ql-cursor-flag {
-    z-index: 1;
+    z-index: 2147483647;
     transform: translate3d(-$border-width-base * 0.5, -100%, 0);
     opacity: 0;
     visibility: hidden;
@@ -106,9 +114,8 @@ $transition-func: cubic-bezier(0.250, 0.460, 0.450, 0.940);
   .ql-cursor-caret-container {
     margin-left: -$spacing-sm;
     padding: 0 $spacing-sm;
-    z-index: 1;
-
-    cursor: text;
+    z-index: 2147483647;
+    pointer-events: auto;
 
     &:hover {
       pointer-events: none;
@@ -128,5 +135,6 @@ $transition-func: cubic-bezier(0.250, 0.460, 0.450, 0.940);
   .ql-cursor-selection-block {
     position: absolute;
     pointer-events: none;
+    z-index: 2147483647;
   }
 }

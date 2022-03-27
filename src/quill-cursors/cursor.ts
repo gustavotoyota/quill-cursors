@@ -1,11 +1,13 @@
 import IQuillCursorsOptions from './i-quill-cursors-options';
 import IQuillRange from './i-range';
+import { debounce } from 'lodash'
 import tinycolor = require('tinycolor2');
 
 export default class Cursor {
   public static readonly CONTAINER_ELEMENT_TAG = 'SPAN';
   public static readonly SELECTION_ELEMENT_TAG = 'SPAN';
   public static readonly CURSOR_CLASS = 'ql-cursor';
+  public static readonly SELECTION_CONTAINER_CLASS = 'ql-cursor-selection-container';
   public static readonly SELECTION_CLASS = 'ql-cursor-selections';
   public static readonly SELECTION_BLOCK_CLASS = 'ql-cursor-selection-block';
   public static readonly CARET_CLASS = 'ql-cursor-caret';
@@ -45,6 +47,16 @@ export default class Cursor {
     const caretContainerElement = element.getElementsByClassName(Cursor.CARET_CONTAINER_CLASS)[0] as HTMLElement;
     const caretElement = caretContainerElement.getElementsByClassName(Cursor.CARET_CLASS)[0] as HTMLElement;
     const flagElement = element.getElementsByClassName(Cursor.FLAG_CLASS)[0] as HTMLElement;
+
+    const hideFlag = debounce(() => {
+      this.toggleFlag(false);
+    }, 3000)
+
+    caretContainerElement.addEventListener('mouseover', () => {
+      this.toggleFlag(true);
+
+      hideFlag()
+    })
 
     flagElement.style.backgroundColor = this.color;
     caretElement.style.backgroundColor = this.color;

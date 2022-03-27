@@ -5,6 +5,7 @@ import * as RangeFix from 'rangefix';
 import template from './template';
 import ResizeObserver from 'resize-observer-polyfill';
 import Delta = require('quill-delta');
+import { fixDOMRect, fixDOMRects, fixBounds } from './utils'
 
 export default class QuillCursors {
   public static DEFAULTS: IQuillCursorsOptions = {
@@ -147,14 +148,14 @@ export default class QuillCursors {
 
     cursor.show();
 
-    const containerRectangle = this._boundsContainer.getBoundingClientRect();
+    const containerRectangle = fixDOMRect(this._boundsContainer.getBoundingClientRect());
 
-    const endBounds = this.quill.getBounds(endIndex);
+    const endBounds = fixBounds(this.quill.getBounds(endIndex));
     cursor.updateCaret(endBounds, containerRectangle);
 
     const ranges = this._lineRanges(cursor, startLeaf, endLeaf);
     const selectionRectangles = ranges
-      .reduce((rectangles, range) => rectangles.concat(Array.from(RangeFix.getClientRects(range))), []);
+      .reduce((rectangles, range) => rectangles.concat(fixDOMRects(Array.from(RangeFix.getClientRects(range)))), []);
 
     cursor.updateSelection(selectionRectangles, containerRectangle);
   }
