@@ -1,6 +1,6 @@
 import IQuillCursorsOptions from './i-quill-cursors-options';
 import IQuillRange from './i-range';
-import { debounce } from 'lodash'
+import {debounce} from 'lodash';
 import tinycolor = require('tinycolor2');
 
 export default class Cursor {
@@ -50,13 +50,13 @@ export default class Cursor {
 
     const hideFlag = debounce(() => {
       this.toggleFlag(false);
-    }, 3000)
+    }, 3000);
 
     caretContainerElement.addEventListener('mouseover', () => {
       this.toggleFlag(true);
 
-      hideFlag()
-    })
+      hideFlag();
+    });
 
     flagElement.style.backgroundColor = this.color;
     caretElement.style.backgroundColor = this.color;

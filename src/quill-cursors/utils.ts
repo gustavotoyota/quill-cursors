@@ -1,27 +1,33 @@
-export function fixDOMRect(rect: DOMRect): DOMRect {
-  const bounds = fixBounds(rect)
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
-  return new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height)
+export function fixDOMRect(pageId: string, rect: DOMRect): DOMRect {
+  const bounds = fixBounds(pageId, rect);
+
+  return new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
 }
 
-export function fixDOMRects(rects: DOMRect[]): DOMRect[] {
-  const results = []
+export function fixDOMRects(pageId: string, rects: DOMRect[]): DOMRect[] {
+  const results = [];
 
-  for (const rect of rects)
-    results.push(fixDOMRect(rect))
+  for (const rect of rects) {
+    results.push(fixDOMRect(pageId, rect));
+  }
 
-  return results
+  return results;
 }
 
-export function fixBounds(bounds: { left: number, top: number, width: number, height: number }): any {
+export function fixBounds(
+  pageId: string,
+  bounds: { left: number; top: number; width: number; height: number },
+): any {
   return {
     // @ts-ignore
-    left: bounds.left / $nuxt.$app.page.camera.zoom,
+    left: bounds.left / __DEEP_NOTES__.pages[pageId].zoom,
     // @ts-ignore
-    top: bounds.top / $nuxt.$app.page.camera.zoom,
+    top: bounds.top / __DEEP_NOTES__.pages[pageId].zoom,
     // @ts-ignore
-    width: bounds.width / $nuxt.$app.page.camera.zoom,
+    width: bounds.width / __DEEP_NOTES__.pages[pageId].zoom,
     // @ts-ignore
-    height: bounds.height / $nuxt.$app.page.camera.zoom,
-  }
+    height: bounds.height / __DEEP_NOTES__.pages[pageId].zoom,
+  };
 }

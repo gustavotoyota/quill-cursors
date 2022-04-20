@@ -5,7 +5,7 @@ import * as RangeFix from 'rangefix';
 import template from './template';
 import ResizeObserver from 'resize-observer-polyfill';
 import Delta = require('quill-delta');
-import { fixDOMRect, fixDOMRects, fixBounds } from './utils'
+import {fixDOMRect, fixDOMRects, fixBounds} from './utils';
 
 export default class QuillCursors {
   public static DEFAULTS: IQuillCursorsOptions = {
@@ -29,7 +29,8 @@ export default class QuillCursors {
     this.quill = quill;
     this.options = this._setDefaults(options);
     this._container = this.quill.addContainer(this.options.containerClass);
-    this._boundsContainer = this.options.boundsContainer || this.quill.container;
+    this._boundsContainer =
+      this.options.boundsContainer || this.quill.container;
     this._currentSelection = this.quill.getSelection();
 
     this._registerSelectionChangeListeners();
@@ -88,8 +89,7 @@ export default class QuillCursors {
   }
 
   public cursors(): Cursor[] {
-    return Object.keys(this._cursors)
-      .map((key) => this._cursors[key]);
+    return Object.keys(this._cursors).map((key) => this._cursors[key]);
   }
 
   private _registerSelectionChangeListeners(): void {
@@ -102,10 +102,8 @@ export default class QuillCursors {
   }
 
   private _registerTextChangeListener(): void {
-    this.quill.on(
-      this.quill.constructor.events.TEXT_CHANGE,
-      (delta: any) => this._handleTextChange(delta),
-    );
+    this.quill.on(this.quill.constructor.events.TEXT_CHANGE, (delta: any) =>
+      this._handleTextChange(delta));
   }
 
   private _registerDomListeners(): void {
@@ -117,13 +115,15 @@ export default class QuillCursors {
     if (this._isObserving) return;
     const editor = this.quill.container.getElementsByClassName('ql-editor')[0];
 
-    const resizeObserver = new ResizeObserver(([entry]: ResizeObserverEntry[]) => {
-      if (!entry.target.isConnected) {
-        resizeObserver.disconnect();
-        this._isObserving = false;
-      }
-      this.update();
-    });
+    const resizeObserver = new ResizeObserver(
+      ([entry]: ResizeObserverEntry[]) => {
+        if (!entry.target.isConnected) {
+          resizeObserver.disconnect();
+          this._isObserving = false;
+        }
+        this.update();
+      },
+    );
 
     resizeObserver.observe(editor);
     this._isObserving = true;
@@ -137,7 +137,9 @@ export default class QuillCursors {
     }
 
     const startIndex = this._indexWithinQuillBounds(cursor.range.index);
-    const endIndex = this._indexWithinQuillBounds(cursor.range.index + cursor.range.length);
+    const endIndex = this._indexWithinQuillBounds(
+      cursor.range.index + cursor.range.length,
+    );
 
     const startLeaf = this.quill.getLeaf(startIndex);
     const endLeaf = this.quill.getLeaf(endIndex);
@@ -148,14 +150,22 @@ export default class QuillCursors {
 
     cursor.show();
 
-    const containerRectangle = fixDOMRect(this._boundsContainer.getBoundingClientRect());
+    const containerRectangle = fixDOMRect(
+      this.options.pageId,
+      this._boundsContainer.getBoundingClientRect(),
+    );
 
-    const endBounds = fixBounds(this.quill.getBounds(endIndex));
+    const endBounds = fixBounds(this.options.pageId, this.quill.getBounds(endIndex));
     cursor.updateCaret(endBounds, containerRectangle);
 
     const ranges = this._lineRanges(cursor, startLeaf, endLeaf);
-    const selectionRectangles = ranges
-      .reduce((rectangles, range) => rectangles.concat(fixDOMRects(Array.from(RangeFix.getClientRects(range)))), []);
+    const selectionRectangles = ranges.reduce(
+      (rectangles, range) =>
+        rectangles.concat(
+          fixDOMRects(this.options.pageId, Array.from(RangeFix.getClientRects(range))),
+        ),
+      [],
+    );
 
     cursor.updateSelection(selectionRectangles, containerRectangle);
   }
@@ -203,7 +213,8 @@ export default class QuillCursors {
     options.containerClass ||= QuillCursors.DEFAULTS.containerClass;
 
     if (options.selectionChangeSource !== null) {
-      options.selectionChangeSource ||= QuillCursors.DEFAULTS.selectionChangeSource;
+      options.selectionChangeSource ||=
+        QuillCursors.DEFAULTS.selectionChangeSource;
     }
 
     options.hideDelayMs = Number.isInteger(options.hideDelayMs) ?
@@ -225,7 +236,11 @@ export default class QuillCursors {
   // element, and instead forces the browser to draw rectangles around the paragraph's
   // constituent text nodes, which is more consistent with the existing browser selection
   // behaviour.
-  private _lineRanges(cursor: Cursor, startLeaf: any[], endLeaf: any[]): Range[] {
+  private _lineRanges(
+    cursor: Cursor,
+    startLeaf: any[],
+    endLeaf: any[],
+  ): Range[] {
     const lines = this.quill.getLines(cursor.range);
     return lines.reduce((ranges: Range[], line: any, index: number) => {
       if (!line.children) {
@@ -234,13 +249,13 @@ export default class QuillCursors {
         return ranges.concat(singleElementRange);
       }
 
-      const [rangeStart, startOffset] = index === 0 ?
-        startLeaf :
-        line.path(0).pop();
+      const [rangeStart, startOffset] =
+        index === 0 ? startLeaf : line.path(0).pop();
 
-      const [rangeEnd, endOffset] = index === lines.length - 1 ?
-        endLeaf :
-        line.path(line.length() - 1).pop();
+      const [rangeEnd, endOffset] =
+        index === lines.length - 1 ?
+          endLeaf :
+          line.path(line.length() - 1).pop();
 
       const range = document.createRange();
 

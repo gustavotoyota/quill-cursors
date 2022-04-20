@@ -1,4 +1,5 @@
 export default interface IQuillCursorsOptions {
+  pageId?: string,
   template?: string;
   containerClass?: string;
   selectionChangeSource?: string;
